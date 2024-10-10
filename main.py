@@ -1,4 +1,3 @@
-# main.py
 import argparse
 from train.train import train_model
 from train.evaluate import evaluate_model
@@ -13,3 +12,4 @@ if __name__ == "__main__":
 
     # Evaluate the model
     evaluate_model(args.model_name, weight_path)
+    
