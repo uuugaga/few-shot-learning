@@ -1,0 +1,37 @@
+model:
+  name: ProtoNet
+  input_channels: 3
+  hidden_dims: [64, 128, 256, 64]
+
+data:
+  split:
+    train: 0.8
+    val: 0.1
+    test: 0.1
+
+training:
+  epochs: 20
+  batch_size: 32
+  learning_rate: 0.001
+  optimizer: Adam
+  weight_decay: 0.0001
+
+testing:
+  num_episodes: 1000
+  num_ways: 5
+  num_shots: 5
+  num_queries: 15
+  batch_size: 32
+
+experiment:
+  num_classes: 50
+  dataset: CIFAR100
+  max_samples_per_class: 20
+
+paths:
+  data_dir: './data'
+  weight_dir: './weights'
+  log_dir: './logs'
+
+strategy:
+  training_strategy: PrototypicalTrainingStrategy

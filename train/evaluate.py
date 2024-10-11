@@ -2,14 +2,14 @@ import torch
 from models.ProtoNet import ProtoNet
 from utils.data_loader import get_dataloaders
 
-def evaluate_model(model_name, weight_path):
+def evaluate_model(config, weight_path):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    num_classes = 50
-    batch_size = 32
-    weight_path = './weight/protonet.pth'
+    num_classes = config['experiment']['num_classes']
+    batch_size = config['testing']['batch_size']
+    weight_path = f"{config['paths']['weight_dir']}/{config['model']['name']}.pth"
 
     # Load data
-    _, test_loader = get_dataloaders(batch_size, num_classes)
+    _, _, test_loader = get_dataloaders(config)
 
     # Initialize model and load weights
     model = ProtoNet().to(device)
@@ -30,5 +30,5 @@ def evaluate_model(model_name, weight_path):
             total += labels.size(0)
 
     accuracy = correct / total
-    print(f"Model {model_name} Accuracy: {accuracy:.4f}")
+    print(f"Model {config['model']['name']} Accuracy: {accuracy:.4f}")
     return accuracy

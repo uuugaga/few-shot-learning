@@ -3,11 +3,11 @@ import torch.nn.functional as F
 from models.ProtoNet import ProtoNet
 
 class TrainingStrategy:
-    def train(self, model, optimizer, data, labels):
+    def train(self, model, data, labels):
         raise NotImplementedError
 
 class PrototypicalTrainingStrategy(TrainingStrategy):
-    def train(self, model, optimizer, data, labels, num_classes):
+    def train(self, model, data, labels, num_classes):
         # Prototypical Network-specific training steps
         embeddings = model(data)
         embeddings = torch.where(torch.isnan(embeddings), torch.zeros_like(embeddings), embeddings)
@@ -18,7 +18,7 @@ class PrototypicalTrainingStrategy(TrainingStrategy):
         return loss
 
 class StandardTrainingStrategy(TrainingStrategy):
-    def train(self, model, optimizer, data, labels):
+    def train(self, model, data, labels):
         # Standard training steps (e.g., classification)
         outputs = model(data)
         loss = F.cross_entropy(outputs, labels)
