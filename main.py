@@ -1,7 +1,7 @@
 import argparse
 import yaml
 from train.train import train_model
-from train.evaluate import evaluate_model
+from train.test import test_model
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train and evaluate a model")
@@ -35,6 +35,6 @@ if __name__ == "__main__":
             }
         }
 
-    weight_path = train_model(config)
+    train_model(config)
 
-    evaluate_model(config, weight_path)
+    test_model(config)
