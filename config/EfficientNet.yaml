@@ -1,9 +1,8 @@
 model:
   file: baseline
-  name: EfficientNetV2S # EfficientNetV2S, 
-  input_channels: 3
-  hidden_dims: [64, 128, 256, 64]
+  name: EfficientNet_B0 # EfficientNetV2S, EfficientNet_B0
   strategy: Standard
+  input_channels: 3
 
 data:
   split:
@@ -19,17 +18,10 @@ training:
   weight_decay: 0.01
   early_stopping: 10
 
-testing:
-  num_episodes: 1000
-  num_ways: 5
-  num_shots: 5
-  num_queries: 15
-  batch_size: 32
-
 experiment:
-  num_classes: 50
+  n_ways: 50
+  n_shots: 20
   dataset: CIFAR100
-  max_samples_per_class: 20
 
 paths:
   data_dir: './data'

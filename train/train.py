@@ -12,7 +12,7 @@ import importlib
 
 def train_model(config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    num_classes = config['experiment']['num_classes']
+    num_classes = config['experiment']['n_ways']
     input_channels = config['model']['input_channels']
     epochs = config['training']['epochs']
     weight_path = f"{config['paths']['weight_dir']}/{config['model']['name']}.pth"

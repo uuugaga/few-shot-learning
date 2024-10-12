@@ -7,7 +7,7 @@ import random
 def get_dataloaders(config):
     
     batch_size = config['training']['batch_size']
-    num_classes = config['experiment']['num_classes']
+    num_classes = config['experiment']['n_ways']
     dataset_name = config['experiment']['dataset']
     train_split = config['data']['split']['train']
     val_split = config['data']['split']['val']
@@ -35,7 +35,7 @@ def get_dataloaders(config):
 
 
     class_counts = {c: 0 for c in range(num_classes)}
-    max_samples_per_class = config['experiment']['max_samples_per_class']
+    max_samples_per_class = config['experiment']['n_shots']
     train_indices = []
     for i, label in enumerate(train_dataset.targets):
         if label in class_counts and class_counts[label] < max_samples_per_class:
