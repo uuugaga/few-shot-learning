@@ -2,28 +2,23 @@ model:
   file: baseline
   name: EfficientNet_B0 # EfficientNetV2S, EfficientNet_B0
   strategy: Standard
-  input_channels: 3
+  input_channels: 1
+  num_classes: 3
+  resize: 84
 
-data:
-  split:
-    train: 0.8
-    val: 0.1
-    test: 0.1
 
 training:
   epochs: 20
   batch_size: 32
-  optimizer: Lion # Adam, AdamW, Lion
+  optimizer: Adam # Adam, AdamW, Lion
   learning_rate: 0.0001
   weight_decay: 0.01
-  early_stopping: 10
+  early_stopping: 3
 
 experiment:
-  n_ways: 50
-  n_shots: 20
-  dataset: CIFAR100
+  dataset: SAR_class_3
 
 paths:
-  data_dir: './data'
+  dataset_dir: './data'
   weight_dir: './weights'
   log_dir: './logs'

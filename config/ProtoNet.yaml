@@ -1,30 +1,30 @@
 model:
   file: ProtoNet
   name: ProtoNet
-  strategy: Prototypical
-  input_channels: 3
-
-data:
-  split:
-    train: 0.8
-    val: 0.1
-    test: 0.1
+  strategy: Prototypical 
+  input_channels: 1
+  resize: 84
+  num_classes: 3
 
 training:
   epochs: 20
   batch_size: 32
-  optimizer: Lion # Adam, AdamW, Lion
+  optimizer: Adam # Adam, AdamW, Lion
   learning_rate: 0.001
   weight_decay: 0.01
-  early_stopping: 5
+  early_stopping: 3
 
 experiment:
-  n_ways: 50
-  n_shots: 20
-  dataset: CIFAR100
+  train_n_ways: 3
+  val_n_ways: 3
+  test_n_ways: 3
+  n_shots: 5 # support set
+  dataset: SAR_class_3 # miniImageNet, Fewshot-CIFAR100, SAR_class_3, SAR_class_6
+  num_query: 15
+  iterations: 100
 
 paths:
-  data_dir: './data'
+  dataset_dir: './data'
   weight_dir: './weights'
   log_dir: './logs'
   
