@@ -14,13 +14,13 @@ training:
   early_stopping: 5
 
 experiment:
-  train_n_ways: 3
-  val_n_ways: 3
-  test_n_ways: 3
-  n_shots: 5 # support set
-  dataset: SAR_class_3 # miniImageNet, Fewshot-CIFAR100, SAR_class_3, SAR_class_6
-  num_query: 15 # must be multiple of n_shots
-  iterations: 300
+  train_n_ways: 6
+  val_n_ways: 6
+  test_n_ways: 6
+  n_shots: 80 # support set
+  dataset: SAR_class_6 # miniImageNet, Fewshot-CIFAR100, SAR_class_3, SAR_class_6
+  num_query: 80 # must be multiple of n_shots
+  iterations: 10
 
 paths:
   dataset_dir: './data'

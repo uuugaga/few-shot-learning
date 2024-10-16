@@ -123,8 +123,8 @@ def get_dataloaders(config):
         val_loader = DataLoader(val_dataset, batch_sampler=val_sampler, num_workers=num_workers)
         test_loader = DataLoader(test_dataset, batch_sampler=test_sampler, num_workers=num_workers)
     else:
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers=num_workers)
-        val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers=num_workers)
-        test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=num_workers)
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False)
 
-    return train_loader, val_loader, test_loader
+    return train_loader, val_loader, test_loader, train_dataset.classes

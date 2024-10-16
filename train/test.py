@@ -4,6 +4,7 @@ import importlib
 from tqdm import tqdm
 import argparse
 import yaml
+from utils.metrics import calculate_metrics, get_class_accuary
 
 # Set device
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -33,22 +34,22 @@ def load_strategy(config):
 
 def evaluate_model(model, test_loader, strategy, config):
     """Evaluate the model on the test dataset."""
-    correct = 0
-    total = 0
     with torch.no_grad():
-        with tqdm(total=len(test_loader), desc=f"Testing Model", ncols=65, leave=True) as progress_bar:
-            for data, labels in test_loader:
-                labels = labels.to(DEVICE)
-                preds, labels = strategy.test(model, data, labels, config)
-                correct += preds.eq(labels).sum().item()
-                total += labels.size(0)
-                progress_bar.update(1)
-    return correct / total
+        preds_list, labels_list = [], []
+        for data, labels in tqdm(test_loader, desc="Testing Model", ncols=65, leave=False):
+            labels = labels.to(DEVICE)
+            preds, labels = strategy.test(model, data, labels, config)
+            preds_list.append(preds)
+            labels_list.append(labels)
+        
+        metrics = calculate_metrics(torch.cat(preds_list), torch.cat(labels_list))
+            
+    return metrics
 
 def test_model(config):
     """Test the model with the given configuration."""
     # Load data
-    _, _, test_loader = get_dataloaders(config)
+    _, _, test_loader, classes_name = get_dataloaders(config)
 
     # Load model
     model = load_model(config)
@@ -57,9 +58,12 @@ def test_model(config):
     strategy = load_strategy(config)
 
     # Evaluate model
-    test_acc = evaluate_model(model, test_loader, strategy, config)
+    metrics = evaluate_model(model, test_loader, strategy, config)
 
-    print(f"Model {config['model']['name']} Accuracy: {test_acc:.4f}")
+    print(f"Model {config['model']['name']} Accuracy: {metrics['accuracy']:.4f}")
+
+    # class_accuracy = get_class_accuary(metrics['confusion_matrix'], classes_name)
+    # print(class_accuracy)
 
 if __name__ == "__main__":
     # Parse command line arguments

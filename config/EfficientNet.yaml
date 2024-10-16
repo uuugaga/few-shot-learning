@@ -3,7 +3,7 @@ model:
   name: EfficientNetV2S # EfficientNetV2S, EfficientNet_B0
   strategy: Standard
   input_channels: 1
-  num_classes: 3
+  num_classes: 6
   resize: 84
 
 
@@ -16,7 +16,7 @@ training:
   early_stopping: 5
 
 experiment:
-  dataset: SAR_class_3 # miniImageNet, Fewshot-CIFAR100, SAR_class_3, SAR_class_6
+  dataset: SAR_class_6 # miniImageNet, Fewshot-CIFAR100, SAR_class_3, SAR_class_6
 
 paths:
   dataset_dir: './data'

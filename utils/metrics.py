@@ -2,6 +2,9 @@ import numpy as np
 from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score, accuracy_score
 
 def calculate_metrics(predictions, labels):
+
+    predictions, labels = np.array(predictions.to('cpu')), np.array(labels.to('cpu'))
+
     metrics = {}
 
     # Accuracy
@@ -18,8 +21,22 @@ def calculate_metrics(predictions, labels):
 
     # Confusion Matrix
     metrics['confusion_matrix'] = confusion_matrix(labels, predictions)
-
+        
     return metrics
+
+def get_class_accuary(confusion, class_names):
+    class_accuracies = {}
+    for idx, class_name in enumerate(class_names):
+        # True Positives for the current class
+        true_positive = confusion[idx, idx]
+        # Total instances of the current class (True Positives + False Negatives)
+        total = confusion[idx, :].sum()
+        # Calculate accuracy for the current class
+        class_accuracies[class_name] = true_positive / total if total > 0 else 0.0
+
+    return class_accuracies
+
+
 
 # Example usage
 if __name__ == '__main__':

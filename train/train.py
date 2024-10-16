@@ -7,6 +7,7 @@ from lion_pytorch import Lion
 from tqdm import tqdm
 import os
 import numpy as np
+from utils.metrics import calculate_metrics
 
 
 def get_device():
@@ -58,15 +59,17 @@ def train_epoch(model, train_loader, optimizer, training_strategy, config, devic
 
 def validate_model(model, val_loader, training_strategy, config, device):
     model.eval()
-    correct, total = 0, 0
+    preds_list, labels_list = [], []
     with torch.no_grad():
         for data, labels in tqdm(val_loader, desc="Validation", ncols=65, leave=False):
             labels = labels.to(device)
             preds, labels = training_strategy.test(model, data, labels, config)
-            preds = torch.tensor(preds) if not isinstance(preds, torch.Tensor) else preds
-            correct += (preds == labels).sum().item()
-            total += labels.size(0)
-    return correct / total
+            preds_list.append(preds)
+            labels_list.append(labels)
+
+        metrics = calculate_metrics(torch.cat(preds_list), torch.cat(labels_list))
+            
+    return metrics
 
 
 def train_model(config):
@@ -74,7 +77,7 @@ def train_model(config):
     epochs, patience = config['training']['epochs'], config['training']['early_stopping']
     weight_path = f"{config['paths']['weight_dir']}/{config['model']['name']}.pth"
 
-    train_loader, val_loader, _ = get_dataloaders(config)
+    train_loader, val_loader, _, _ = get_dataloaders(config)
     model = initialize_model(config, device)
     optimizer = get_optimizer(config, model)
     try:
@@ -85,7 +88,8 @@ def train_model(config):
     best_val_acc, counter = 0.0, 0
     for epoch in range(epochs):
         avg_loss = train_epoch(model, train_loader, optimizer, training_strategy, config, device)
-        val_acc = validate_model(model, val_loader, training_strategy, config, device)
+        metrics = validate_model(model, val_loader, training_strategy, config, device)
+        val_acc = metrics['accuracy']
 
         tqdm.write(f"Epoch: [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}, Val acc: {val_acc:.4f}")
         best_val_acc, counter = save_best_model(model, weight_path, best_val_acc, val_acc) if val_acc > best_val_acc else (best_val_acc, counter + 1)

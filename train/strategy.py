@@ -51,7 +51,7 @@ class Prototypical(Strategy):
 
     @staticmethod
     def _remap_labels(support_labels, labels):
-        classes = torch.unique(support_labels)
+        classes, _ = torch.sort(torch.unique(support_labels))
         label_map = {int(c): i for i, c in enumerate(classes)}
         remapped_support_labels = torch.tensor([label_map[c.item()] for c in support_labels], device=device)
         remapped_labels = torch.tensor([label_map[c.item()] for c in labels], device=device)
