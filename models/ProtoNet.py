@@ -30,71 +30,75 @@ class ProtoNet(nn.Module):
         x = self.encoder(x)
         return x.view(x.size(0), -1)
 
-    @staticmethod
-    def compute_prototypes(embeddings, labels, num_classes):
-        prototypes = [
-            embeddings[(labels == c).nonzero(as_tuple=True)[0]].mean(dim=0) if (labels == c).any()
-            else torch.zeros(embeddings.size(1), device=embeddings.device)
-            for c in range(num_classes)
-        ]
-        return torch.stack(prototypes)
-
-
 class PrototypicalBatchSampler(object):
     def __init__(self, config, labels, mode='train'):
         super(PrototypicalBatchSampler, self).__init__()
         self.labels = labels
         self.classes_per_it = config['experiment'][f'{mode}_n_ways']
-        self.sample_per_class = config['experiment']['n_shots'] + config['experiment']['num_query']
-        self.iterations = config['experiment']['iterations']
-
-        self.classes, self.counts = np.unique(self.labels, return_counts=True)
-        self.indexes = [torch.tensor(np.where(self.labels == cls)[0]) for cls in self.classes]
-
-    def __iter__(self):
-        for _ in range(self.iterations):
-            chosen_classes = torch.multinomial(torch.ones(len(self.classes)), self.classes_per_it, replacement=False)
-            batch = torch.cat([
-                self.indexes[c][torch.randperm(len(self.indexes[c]))[:self.sample_per_class]]
-                for c in chosen_classes
-            ])
-            yield batch
-
-    def __len__(self):
-        return self.iterations
-
-
-class PrototypicalBatchSamplerSupportQuerySplit(object):
-    def __init__(self, config, labels, mode='train'):
-        super(PrototypicalBatchSamplerSupportQuerySplit, self).__init__()
-        self.labels = labels
-        self.classes_per_it = config['experiment'][f'{mode}_n_ways']
         self.n_shots = config['experiment']['n_shots']
         self.num_query = config['experiment']['num_query']
         self.iterations = config['experiment']['iterations']
+        self.mode = mode
 
         self.classes, self.counts = np.unique(self.labels, return_counts=True)
         self.indexes = [torch.tensor(np.where(self.labels == cls)[0]) for cls in self.classes]
 
-    def __iter__(self):
-        for _ in range(self.iterations):
-            chosen_classes = torch.multinomial(torch.ones(len(self.classes)), self.classes_per_it, replacement=False)
-            support_batch, query_batch, support_labels, query_labels = [], [], [], []
+        if len(self.classes) == self.classes_per_it and (self.mode == 'test' or self.mode == 'val'):
+            self.fixed_support_idxs = []
+            for idxs in self.indexes:
+                permuted_idxs = idxs[torch.randperm(len(idxs))[:self.n_shots]]
+                self.fixed_support_idxs.append(permuted_idxs)
 
-            for c in chosen_classes:
+            self.remaining_query_idxs = []
+            for c, support_idxs in enumerate(self.fixed_support_idxs):
                 idxs = self.indexes[c]
-                permuted_idxs = idxs[torch.randperm(len(idxs))[:self.n_shots + self.num_query]]
-                support_batch.append(permuted_idxs[:self.n_shots])
-                query_batch.append(permuted_idxs[self.n_shots:])
-                support_labels.extend([self.classes[c]] * self.n_shots)
-                query_labels.extend([self.classes[c]] * self.num_query)
+                remaining_idxs = torch.tensor([idx for idx in idxs if idx not in support_idxs])
+                self.remaining_query_idxs.append(remaining_idxs)
 
-            support_batch = torch.cat(support_batch)
-            query_batch = torch.cat(query_batch)
-            batch = []
-            for i in range(len(support_batch)):
-                batch.append((support_batch[i], query_batch[i]))
-            yield batch
+            self.remaining_query_idxs = torch.cat(self.remaining_query_idxs)
+            self.fixed_support_idxs = torch.cat(self.fixed_support_idxs)
+
+    def __iter__(self):
+        if len(self.classes) == self.classes_per_it and (self.mode == 'test' or self.mode == 'val'):
+            num_iterations = len(self.remaining_query_idxs) // (self.n_shots * self.classes_per_it)
+            for i in range(num_iterations):
+
+                query_len = self.n_shots * self.classes_per_it
+                support_batch = self.fixed_support_idxs
+                query_batch = self.remaining_query_idxs[i * query_len: (i + 1) * query_len]
+
+                if len(support_batch) < len(query_batch):
+                    support_batch = torch.cat([support_batch, support_batch.repeat((len(query_batch) - len(support_batch)) // len(support_batch))])
+
+                batch = []
+                for i in range(len(support_batch)):
+                    batch.append((support_batch[i], query_batch[i]))
+
+                yield batch
+
+        else:
+            for _ in range(self.iterations):
+                chosen_classes = torch.multinomial(torch.ones(len(self.classes)), self.classes_per_it, replacement=False)
+                support_batch, query_batch = [], []
+
+                for c in chosen_classes:
+                    idxs = self.indexes[c]
+                    permuted_idxs = idxs[torch.randperm(len(idxs))[:self.n_shots + self.num_query]]
+                    support_batch.append(permuted_idxs[:self.n_shots])
+                    query_batch.append(permuted_idxs[self.n_shots:])
+
+                support_batch = torch.cat(support_batch)
+                query_batch = torch.cat(query_batch)
+
+                if len(support_batch) < len(query_batch):
+                    support_batch = torch.cat([support_batch, support_batch.repeat((len(query_batch) - len(support_batch)) // len(support_batch))])
+
+                batch = []
+                for i in range(len(support_batch)):
+                    batch.append((support_batch[i], query_batch[i]))
+                yield batch
 
     def __len__(self):
-        return self.iterations
+        if len(self.classes) == self.classes_per_it and (self.mode == 'test' or self.mode == 'val'):
+            return len(self.remaining_query_idxs) // (self.n_shots * self.classes_per_it)
+        return self.iterations  

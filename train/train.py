@@ -44,7 +44,7 @@ def train_epoch(model, train_loader, optimizer, training_strategy, config, devic
     epoch_loss = 0.0
     accumulation_steps = config['training'].get('accumulation_steps', 1)
     for i, (data, labels) in enumerate(tqdm(train_loader, desc="Training", ncols=65, leave=False)):
-        data, labels = data.to(device), labels.to(device)
+        labels = labels.to(device)
         loss = training_strategy.train(model, data, labels, config) / accumulation_steps
         loss.backward()
 
@@ -62,7 +62,7 @@ def validate_model(model, val_loader, training_strategy, config, device):
     with torch.no_grad():
         for data, labels in tqdm(val_loader, desc="Validation", ncols=65, leave=False):
             labels = labels.to(device)
-            preds = training_strategy.test(model, data, labels, config)
+            preds, labels = training_strategy.test(model, data, labels, config)
             preds = torch.tensor(preds) if not isinstance(preds, torch.Tensor) else preds
             correct += (preds == labels).sum().item()
             total += labels.size(0)

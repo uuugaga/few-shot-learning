@@ -11,7 +11,7 @@ class EfficientNetV2S(nn.Module):
         self.model = efficientnet_v2_s(weights=EfficientNet_V2_S_Weights.IMAGENET1K_V1)
 
         if self.input_channels != 3:
-            self.model.features[0][0] = nn.Conv2d(self.input_channels, 64, kernel_size=3, stride=1, padding=1)
+            self.model.features[0][0] = nn.Conv2d(self.input_channels, 24, kernel_size=3, stride=1, padding=1)
 
         in_features = self.model.classifier[1].in_features
         self.model.classifier[1] = nn.Linear(in_features, self.num_classes)

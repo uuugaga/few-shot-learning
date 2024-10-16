@@ -4,15 +4,14 @@ model:
   strategy: Prototypical 
   input_channels: 1
   resize: 84
-  num_classes: 3
 
 training:
-  epochs: 20
-  batch_size: 32
+  epochs: 30
+  # batch_size: 32
   optimizer: Adam # Adam, AdamW, Lion
   learning_rate: 0.001
   weight_decay: 0.01
-  early_stopping: 3
+  early_stopping: 5
 
 experiment:
   train_n_ways: 3
@@ -20,8 +19,8 @@ experiment:
   test_n_ways: 3
   n_shots: 5 # support set
   dataset: SAR_class_3 # miniImageNet, Fewshot-CIFAR100, SAR_class_3, SAR_class_6
-  num_query: 15
-  iterations: 100
+  num_query: 15 # must be multiple of n_shots
+  iterations: 300
 
 paths:
   dataset_dir: './data'

@@ -39,7 +39,7 @@ def evaluate_model(model, test_loader, strategy, config):
         with tqdm(total=len(test_loader), desc=f"Testing Model", ncols=65, leave=True) as progress_bar:
             for data, labels in test_loader:
                 labels = labels.to(DEVICE)
-                preds = strategy.test(model, data, labels, config)
+                preds, labels = strategy.test(model, data, labels, config)
                 correct += preds.eq(labels).sum().item()
                 total += labels.size(0)
                 progress_bar.update(1)

@@ -116,8 +116,8 @@ def get_dataloaders(config):
 
     if model_name == 'ProtoNet':
         train_sampler = ProtoNet.PrototypicalBatchSampler(config, train_dataset.targets, mode='train')
-        val_sampler = ProtoNet.PrototypicalBatchSamplerSupportQuerySplit(config, val_dataset.targets, mode='val')
-        test_sampler = ProtoNet.PrototypicalBatchSamplerSupportQuerySplit(config, test_dataset.targets, mode='test')
+        val_sampler = ProtoNet.PrototypicalBatchSampler(config, val_dataset.targets, mode='val')
+        test_sampler = ProtoNet.PrototypicalBatchSampler(config, test_dataset.targets, mode='test')
 
         train_loader = DataLoader(train_dataset, batch_sampler=train_sampler, num_workers=num_workers)
         val_loader = DataLoader(val_dataset, batch_sampler=val_sampler, num_workers=num_workers)
